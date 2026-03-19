@@ -5,6 +5,7 @@ functions for template loading and data parsing.
 """
 
 import logging
+import re
 from typing import List, Tuple, Optional, Any
 
 from pptx.enum.text import PP_ALIGN
@@ -21,6 +22,56 @@ from .constants import (
 from .image_utils import download_image, ImageDownloadError, ImageValidationError
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Inline markdown parsing for PPTX runs
+# ---------------------------------------------------------------------------
+
+_PPTX_INLINE_FORMAT_RE = re.compile(
+    r'(\*{3}(?:[^*]|\*(?!\*{2}))+\*{3}'        # ***bold italic***
+    r'|\*\*(?:[^*]|\*(?!\*))+\*\*'              # **bold**
+    r'|(?<!\*)\*(?!\*)[^*]+(?<!\*)\*(?!\*)'     # *italic* (no nested bold)
+    r'|`[^`]+`'                                  # `code`
+    r'|~~.+?~~'                                  # ~~strikethrough~~
+    r'|__(?!_).+?__)'                            # __underline__
+)
+
+
+def _apply_inline_formatting_to_paragraph(text: str, paragraph) -> None:
+    """Parse inline markdown and add formatted runs to a pptx paragraph.
+
+    Clears any existing runs first, then adds new runs with bold, italic,
+    bold-italic, or monospace (Courier New) formatting as indicated by the
+    markdown markers.  Strikethrough (~~text~~) and underline (__text__)
+    markers are stripped but the text is preserved.
+    """
+    # Clear existing runs from the paragraph's XML element
+    for run in list(paragraph.runs):
+        run._r.getparent().remove(run._r)
+
+    for part in _PPTX_INLINE_FORMAT_RE.split(text):
+        if not part:
+            continue
+        run = paragraph.add_run()
+        if part.startswith('***') and part.endswith('***') and len(part) > 6:
+            run.text = part[3:-3]
+            run.font.bold = True
+            run.font.italic = True
+        elif part.startswith('**') and part.endswith('**') and len(part) > 4:
+            run.text = part[2:-2]
+            run.font.bold = True
+        elif part.startswith('*') and part.endswith('*') and not part.startswith('**') and len(part) > 2:
+            run.text = part[1:-1]
+            run.font.italic = True
+        elif part.startswith('`') and part.endswith('`') and len(part) > 2:
+            run.text = part[1:-1]
+            run.font.name = 'Courier New'
+        elif part.startswith('~~') and part.endswith('~~') and len(part) > 4:
+            run.text = part[2:-2]
+        elif part.startswith('__') and part.endswith('__') and len(part) > 4:
+            run.text = part[2:-2]
+        else:
+            run.text = part
 
 
 # =============================================================================
@@ -362,11 +413,12 @@ class TableHelperMixin:
                     continue
 
                 cell = table.cell(row_idx, col_idx)
-                cell.text = str(cell_text) if cell_text else ""
+                para = cell.text_frame.paragraphs[0]
+                _apply_inline_formatting_to_paragraph(str(cell_text) if cell_text else "", para)
 
                 if row_idx == 0:  # Header row
-                    cell.text_frame.paragraphs[0].font.bold = True
-                    cell.text_frame.paragraphs[0].font.color.rgb = TABLE_HEADER_TEXT
+                    para.font.bold = True
+                    para.font.color.rgb = TABLE_HEADER_TEXT
                     self._set_cell_fill(cell, header_color)
                 elif alternate_rows and row_idx % 2 == 0:
                     self._set_cell_fill(cell, TABLE_ALT_ROW_FILL)

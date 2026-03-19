@@ -6,6 +6,20 @@ from openpyxl.utils import get_column_letter
 
 logger = logging.getLogger(__name__)
 
+# Regex to strip inline markdown markers, capturing the inner text.
+# Used for mixed-content cells where the whole cell is not wrapped in a
+# single formatting marker (e.g. "text with **bold** word").
+_INLINE_MD_STRIP_RE = re.compile(
+    r'\*\*\*(.+?)\*\*\*'       # ***bold italic***
+    r'|\*\*(.+?)\*\*'           # **bold**
+    r'|~~(.+?)~~'               # ~~strikethrough~~
+    r'|__(?!_)(.+?)__'          # __underline__
+    r'|\*(.+?)\*'               # *italic*
+    r'|`([^`]+)`'               # `code`
+    r'|\[([^\]]+)\]\([^)]*\)',  # [link text](url)
+    re.DOTALL,
+)
+
 
 def parse_table(lines: List[str], start_idx: int) -> Tuple[Optional[List[List[str]]], int]:
     """Parse markdown table and return (table_data, next_index)."""
@@ -69,6 +83,13 @@ def parse_cell_formatting(cell_text: str) -> Tuple[str, Dict[str, bool]]:
     elif clean_text.startswith('`') and clean_text.endswith('`'):
         clean_text = clean_text[1:-1]
         formatting_info['monospace'] = True
+    else:
+        # Strip inline markdown markers from mixed-content cells so that
+        # markers like **bold** or *italic* are not written literally.
+        clean_text = _INLINE_MD_STRIP_RE.sub(
+            lambda m: next((g for g in m.groups() if g is not None), m.group(0)),
+            clean_text,
+        )
 
     return clean_text, formatting_info
 

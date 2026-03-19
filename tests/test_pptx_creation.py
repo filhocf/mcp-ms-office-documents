@@ -163,6 +163,95 @@ class TestTableSlides:
         path = save_presentation(pres, "06_table_no_alternating.pptx")
         assert path.exists()
 
+    def test_table_cell_inline_bold(self):
+        """Cells with **bold** content should produce a bold run, not literal asterisks."""
+        from pptx_tools.helpers import _apply_inline_formatting_to_paragraph
+        from pptx import Presentation
+
+        prs = Presentation()
+        blank_layout = prs.slide_layouts[6]
+        slide = prs.slides.add_slide(blank_layout)
+        txBox = slide.shapes.add_textbox(0, 0, prs.slide_width, prs.slide_height)
+        para = txBox.text_frame.paragraphs[0]
+
+        _apply_inline_formatting_to_paragraph("**Important**", para)
+
+        assert len(para.runs) == 1
+        assert para.runs[0].text == "Important"
+        assert para.runs[0].font.bold is True
+
+    def test_table_cell_inline_italic(self):
+        """Cells with *italic* content should produce an italic run."""
+        from pptx_tools.helpers import _apply_inline_formatting_to_paragraph
+        from pptx import Presentation
+
+        prs = Presentation()
+        blank_layout = prs.slide_layouts[6]
+        slide = prs.slides.add_slide(blank_layout)
+        txBox = slide.shapes.add_textbox(0, 0, prs.slide_width, prs.slide_height)
+        para = txBox.text_frame.paragraphs[0]
+
+        _apply_inline_formatting_to_paragraph("*Done*", para)
+
+        assert len(para.runs) == 1
+        assert para.runs[0].text == "Done"
+        assert para.runs[0].font.italic is True
+
+    def test_table_cell_inline_code(self):
+        """Cells with `code` content should use Courier New font."""
+        from pptx_tools.helpers import _apply_inline_formatting_to_paragraph
+        from pptx import Presentation
+
+        prs = Presentation()
+        blank_layout = prs.slide_layouts[6]
+        slide = prs.slides.add_slide(blank_layout)
+        txBox = slide.shapes.add_textbox(0, 0, prs.slide_width, prs.slide_height)
+        para = txBox.text_frame.paragraphs[0]
+
+        _apply_inline_formatting_to_paragraph("`GET /api`", para)
+
+        assert len(para.runs) == 1
+        assert para.runs[0].text == "GET /api"
+        assert para.runs[0].font.name == "Courier New"
+
+    def test_table_cell_mixed_inline_formatting(self):
+        """Mixed inline formatting produces multiple runs with correct styles."""
+        from pptx_tools.helpers import _apply_inline_formatting_to_paragraph
+        from pptx import Presentation
+
+        prs = Presentation()
+        blank_layout = prs.slide_layouts[6]
+        slide = prs.slides.add_slide(blank_layout)
+        txBox = slide.shapes.add_textbox(0, 0, prs.slide_width, prs.slide_height)
+        para = txBox.text_frame.paragraphs[0]
+
+        _apply_inline_formatting_to_paragraph("Use **sudo** carefully", para)
+
+        texts = [r.text for r in para.runs]
+        assert "Use " in texts
+        assert "sudo" in texts
+        assert " carefully" in texts
+        bold_runs = [r for r in para.runs if r.font.bold]
+        assert len(bold_runs) == 1
+        assert bold_runs[0].text == "sudo"
+
+    def test_table_slide_with_formatted_cells(self):
+        """Table slide renders correctly when cells contain inline markdown."""
+        slides = [
+            {
+                "slide_type": "table",
+                "slide_title": "Formatted Table",
+                "table_data": [
+                    ["Feature", "Status"],
+                    ["**Auth**", "*Done*"],
+                    ["`API`", "Pending"],
+                ],
+            }
+        ]
+        pres = PowerpointPresentation(slides, "16:9")
+        path = save_presentation(pres, "07_formatted_table_cells.pptx")
+        assert path.exists()
+
 
 class TestTwoColumnSlides:
     """Tests for two-column layout slides."""

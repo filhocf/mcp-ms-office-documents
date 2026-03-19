@@ -374,6 +374,90 @@ class TestAdjustFormulaReferencesUnit:
         assert result == "=Revenue!B2-B4"
 
 
+class TestCellMarkdownFormatting:
+    """Tests that markdown markers in table cells are properly handled."""
+
+    def test_whole_cell_bold_stripped(self):
+        """A whole-cell **bold** value should be stored without the markers."""
+        markdown = """| Feature | Status |
+|---------|--------|
+| **Auth** | Done |
+"""
+        wb = _create_workbook_from_markdown(markdown)
+        ws = wb.active
+        # Cell A2 should be "Auth", not "**Auth**"
+        cell = ws.cell(row=2, column=1)
+        assert cell.value == "Auth"
+        assert cell.font.bold
+
+    def test_whole_cell_italic_stripped(self):
+        """A whole-cell *italic* value should be stored without the markers."""
+        markdown = """| Feature | Status |
+|---------|--------|
+| Item | *Done* |
+"""
+        wb = _create_workbook_from_markdown(markdown)
+        ws = wb.active
+        cell = ws.cell(row=2, column=2)
+        assert cell.value == "Done"
+        assert cell.font.italic
+
+    def test_whole_cell_monospace_stripped(self):
+        """A whole-cell `code` value should be stored without the backticks."""
+        markdown = """| Name | Code |
+|------|------|
+| API  | `GET /v1` |
+"""
+        wb = _create_workbook_from_markdown(markdown)
+        ws = wb.active
+        cell = ws.cell(row=2, column=2)
+        assert cell.value == "GET /v1"
+
+    def test_inline_bold_markers_stripped(self):
+        """Inline **bold** markers inside mixed text should be stripped."""
+        markdown = """| Description |
+|-------------|
+| Use **sudo** carefully |
+"""
+        wb = _create_workbook_from_markdown(markdown)
+        ws = wb.active
+        cell = ws.cell(row=2, column=1)
+        assert cell.value == "Use sudo carefully"
+
+    def test_inline_italic_markers_stripped(self):
+        """Inline *italic* markers inside mixed text should be stripped."""
+        markdown = """| Note |
+|------|
+| Press *Enter* to continue |
+"""
+        wb = _create_workbook_from_markdown(markdown)
+        ws = wb.active
+        cell = ws.cell(row=2, column=1)
+        assert cell.value == "Press Enter to continue"
+
+    def test_inline_code_markers_stripped(self):
+        """Inline `code` markers inside mixed text should be stripped."""
+        markdown = """| Info |
+|------|
+| Run `pip install` first |
+"""
+        wb = _create_workbook_from_markdown(markdown)
+        ws = wb.active
+        cell = ws.cell(row=2, column=1)
+        assert cell.value == "Run pip install first"
+
+    def test_multiple_inline_markers_stripped(self):
+        """Multiple inline markers in the same cell should all be stripped."""
+        markdown = """| Details |
+|---------|
+| **Bold** and *italic* text |
+"""
+        wb = _create_workbook_from_markdown(markdown)
+        ws = wb.active
+        cell = ws.cell(row=2, column=1)
+        assert cell.value == "Bold and italic text"
+
+
 class TestNumberFormats:
     """Tests for cell number_format (percent, thousands separator)."""
 
