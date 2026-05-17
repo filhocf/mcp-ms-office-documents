@@ -386,6 +386,145 @@ async def tool_get_pptx_slides(
         raise ToolError(f"Error reading slides: {e}")
 
 
+# === Edit Tools ===
+from edit_tools import (
+    edit_docx_paragraph, delete_docx_paragraph, search_replace_docx, insert_docx_paragraph,
+    edit_xlsx_cell, insert_xlsx_row, delete_xlsx_row,
+    edit_pptx_slide_text, delete_pptx_slide, reorder_pptx_slides,
+)
+
+
+@mcp.tool(name="edit_docx_paragraph", description="Edit a paragraph in an existing DOCX file by index", tags=["edit", "docx"])
+async def tool_edit_docx_paragraph(
+    file_path: Annotated[str, Field(description="Absolute path to the .docx file")],
+    index: Annotated[int, Field(description="Paragraph index (0-based)")],
+    new_text: Annotated[str, Field(description="New text for the paragraph")],
+    output_path: Annotated[Optional[str], Field(description="Save to different path (omit to overwrite)", default=None)] = None,
+) -> str:
+    try:
+        return edit_docx_paragraph(file_path, index, new_text, output_path)
+    except Exception as e:
+        raise ToolError(f"Error editing paragraph: {e}")
+
+
+@mcp.tool(name="delete_docx_paragraph", description="Delete a paragraph from a DOCX file by index", tags=["edit", "docx"])
+async def tool_delete_docx_paragraph(
+    file_path: Annotated[str, Field(description="Absolute path to the .docx file")],
+    index: Annotated[int, Field(description="Paragraph index to delete (0-based)")],
+    output_path: Annotated[Optional[str], Field(description="Save to different path (omit to overwrite)", default=None)] = None,
+) -> str:
+    try:
+        return delete_docx_paragraph(file_path, index, output_path)
+    except Exception as e:
+        raise ToolError(f"Error deleting paragraph: {e}")
+
+
+@mcp.tool(name="search_replace_docx", description="Search and replace text in a DOCX file", tags=["edit", "docx"])
+async def tool_search_replace_docx(
+    file_path: Annotated[str, Field(description="Absolute path to the .docx file")],
+    search_text: Annotated[str, Field(description="Text to search for")],
+    replace_text: Annotated[str, Field(description="Replacement text")],
+    output_path: Annotated[Optional[str], Field(description="Save to different path (omit to overwrite)", default=None)] = None,
+) -> str:
+    try:
+        return search_replace_docx(file_path, search_text, replace_text, output_path)
+    except Exception as e:
+        raise ToolError(f"Error in search/replace: {e}")
+
+
+@mcp.tool(name="insert_docx_paragraph", description="Insert a new paragraph at a specific position in a DOCX file", tags=["edit", "docx"])
+async def tool_insert_docx_paragraph(
+    file_path: Annotated[str, Field(description="Absolute path to the .docx file")],
+    index: Annotated[int, Field(description="Position to insert at (0-based)")],
+    text: Annotated[str, Field(description="Text for the new paragraph")],
+    style: Annotated[str, Field(description="Paragraph style (e.g. 'Normal', 'Heading 1')", default="Normal")] = "Normal",
+    output_path: Annotated[Optional[str], Field(description="Save to different path (omit to overwrite)", default=None)] = None,
+) -> str:
+    try:
+        return insert_docx_paragraph(file_path, index, text, style, output_path)
+    except Exception as e:
+        raise ToolError(f"Error inserting paragraph: {e}")
+
+
+@mcp.tool(name="edit_xlsx_cell", description="Edit a cell value in an XLSX file", tags=["edit", "xlsx"])
+async def tool_edit_xlsx_cell(
+    file_path: Annotated[str, Field(description="Absolute path to the .xlsx file")],
+    sheet_name: Annotated[str, Field(description="Sheet name")],
+    cell: Annotated[str, Field(description="Cell reference (e.g. 'A1', 'B2')")],
+    value: Annotated[str, Field(description="New cell value")],
+    output_path: Annotated[Optional[str], Field(description="Save to different path (omit to overwrite)", default=None)] = None,
+) -> str:
+    try:
+        return edit_xlsx_cell(file_path, sheet_name, cell, value, output_path)
+    except Exception as e:
+        raise ToolError(f"Error editing cell: {e}")
+
+
+@mcp.tool(name="insert_xlsx_row", description="Insert a new row in an XLSX sheet", tags=["edit", "xlsx"])
+async def tool_insert_xlsx_row(
+    file_path: Annotated[str, Field(description="Absolute path to the .xlsx file")],
+    sheet_name: Annotated[str, Field(description="Sheet name")],
+    row_index: Annotated[int, Field(description="Row position to insert at (1-based)")],
+    values: Annotated[List[str], Field(description="List of cell values for the new row")],
+    output_path: Annotated[Optional[str], Field(description="Save to different path (omit to overwrite)", default=None)] = None,
+) -> str:
+    try:
+        return insert_xlsx_row(file_path, sheet_name, row_index, values, output_path)
+    except Exception as e:
+        raise ToolError(f"Error inserting row: {e}")
+
+
+@mcp.tool(name="delete_xlsx_row", description="Delete a row from an XLSX sheet", tags=["edit", "xlsx"])
+async def tool_delete_xlsx_row(
+    file_path: Annotated[str, Field(description="Absolute path to the .xlsx file")],
+    sheet_name: Annotated[str, Field(description="Sheet name")],
+    row_index: Annotated[int, Field(description="Row to delete (1-based)")],
+    output_path: Annotated[Optional[str], Field(description="Save to different path (omit to overwrite)", default=None)] = None,
+) -> str:
+    try:
+        return delete_xlsx_row(file_path, sheet_name, row_index, output_path)
+    except Exception as e:
+        raise ToolError(f"Error deleting row: {e}")
+
+
+@mcp.tool(name="edit_pptx_slide_text", description="Replace text in a specific PPTX slide", tags=["edit", "pptx"])
+async def tool_edit_pptx_slide_text(
+    file_path: Annotated[str, Field(description="Absolute path to the .pptx file")],
+    slide_index: Annotated[int, Field(description="Slide index (0-based)")],
+    old_text: Annotated[str, Field(description="Text to find")],
+    new_text: Annotated[str, Field(description="Replacement text")],
+    output_path: Annotated[Optional[str], Field(description="Save to different path (omit to overwrite)", default=None)] = None,
+) -> str:
+    try:
+        return edit_pptx_slide_text(file_path, slide_index, old_text, new_text, output_path)
+    except Exception as e:
+        raise ToolError(f"Error editing slide: {e}")
+
+
+@mcp.tool(name="delete_pptx_slide", description="Delete a slide from a PPTX file", tags=["edit", "pptx"])
+async def tool_delete_pptx_slide(
+    file_path: Annotated[str, Field(description="Absolute path to the .pptx file")],
+    slide_index: Annotated[int, Field(description="Slide index to delete (0-based)")],
+    output_path: Annotated[Optional[str], Field(description="Save to different path (omit to overwrite)", default=None)] = None,
+) -> str:
+    try:
+        return delete_pptx_slide(file_path, slide_index, output_path)
+    except Exception as e:
+        raise ToolError(f"Error deleting slide: {e}")
+
+
+@mcp.tool(name="reorder_pptx_slides", description="Reorder slides in a PPTX file", tags=["edit", "pptx"])
+async def tool_reorder_pptx_slides(
+    file_path: Annotated[str, Field(description="Absolute path to the .pptx file")],
+    new_order: Annotated[List[int], Field(description="New slide order as list of indices (e.g. [2, 0, 1])")],
+    output_path: Annotated[Optional[str], Field(description="Save to different path (omit to overwrite)", default=None)] = None,
+) -> str:
+    try:
+        return reorder_pptx_slides(file_path, new_order, output_path)
+    except Exception as e:
+        raise ToolError(f"Error reordering slides: {e}")
+
+
 if __name__ == "__main__":
     mcp.run(
         transport="streamable-http",
