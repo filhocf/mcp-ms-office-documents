@@ -63,7 +63,8 @@ Repository = "https://github.com/filhocf/mcp-ms-office-documents"
 Issues = "https://github.com/filhocf/mcp-ms-office-documents/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["mcp_office_documents"]
+packages = ["mcp_office_documents", "docx_tools", "xlsx_tools", "pptx_tools", "email_tools", "xml_tools", "upload_tools", "read_tools", "edit_tools", "pdf_tools", "merge_tools"]
+include = ["main.py", "config.py", "template_utils.py", "middleware.py"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
