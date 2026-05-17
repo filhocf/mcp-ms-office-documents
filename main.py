@@ -386,6 +386,23 @@ async def tool_get_pptx_slides(
         raise ToolError(f"Error reading slides: {e}")
 
 
+# === XLSX Formatting Tools ===
+from xlsx_tools.formatting import apply_excel_formatting
+
+
+@mcp.tool(name="apply_excel_formatting", description="Apply conditional formatting rules to an Excel sheet", tags=["edit", "xlsx", "formatting"])
+async def tool_apply_excel_formatting(
+    file_path: Annotated[str, Field(description="Absolute path to the .xlsx file")],
+    sheet_name: Annotated[str, Field(description="Sheet name")],
+    rules: Annotated[List[Dict], Field(description="List of formatting rules. Each: {range, type, condition, value, color}")],
+    output_path: Annotated[Optional[str], Field(description="Save to different path", default=None)] = None,
+) -> str:
+    try:
+        return apply_excel_formatting(file_path, sheet_name, rules, output_path)
+    except Exception as e:
+        raise ToolError(f"Error applying formatting: {e}")
+
+
 # === Conditional Template Tools ===
 from docx_tools.conditional_templates import render_docx_template, render_pptx_template
 
