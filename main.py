@@ -386,6 +386,36 @@ async def tool_get_pptx_slides(
         raise ToolError(f"Error reading slides: {e}")
 
 
+# === Excel Chart Tools ===
+from xlsx_tools.charts import create_excel_chart
+
+
+@mcp.tool(name="create_excel_chart", description="Create a chart (bar, line, pie, column) in an Excel file", tags=["create", "xlsx", "chart"])
+async def tool_create_excel_chart(
+    chart_type: Annotated[str, Field(description="Chart type: bar, column, line, pie")],
+    title: Annotated[str, Field(description="Chart title")],
+    inline_data: Annotated[Optional[List[List]], Field(description="Data rows including header (e.g. [['Month','Sales'],['Jan',100]])", default=None)] = None,
+    file_path: Annotated[Optional[str], Field(description="Path to existing XLSX to add chart to", default=None)] = None,
+    sheet_name: Annotated[str, Field(description="Sheet name", default="Sheet1")] = "Sheet1",
+    categories_column: Annotated[int, Field(description="Column for categories (1-based)", default=1)] = 1,
+    data_start_column: Annotated[int, Field(description="First data column (1-based)", default=2)] = 2,
+    data_end_column: Annotated[Optional[int], Field(description="Last data column (None=same as start)", default=None)] = None,
+    chart_position: Annotated[str, Field(description="Cell to place chart (e.g. 'E2')", default="E2")] = "E2",
+    output_path: Annotated[Optional[str], Field(description="Save to path", default=None)] = None,
+    file_name: Annotated[Optional[str], Field(description="Output file name", default=None)] = None,
+) -> str:
+    try:
+        return create_excel_chart(
+            file_path=file_path, chart_type=chart_type, title=title,
+            sheet_name=sheet_name, categories_column=categories_column,
+            data_start_column=data_start_column, data_end_column=data_end_column,
+            chart_position=chart_position, inline_data=inline_data,
+            output_path=output_path, file_name=file_name,
+        )
+    except Exception as e:
+        raise ToolError(f"Error creating chart: {e}")
+
+
 # === Advanced DOCX Tools ===
 from docx_tools.advanced import (
     add_image_to_docx, add_header_footer, set_page_margins,
