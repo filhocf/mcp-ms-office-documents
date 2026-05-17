@@ -1,0 +1,81 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mcp-ms-office-documents"
+version = "0.1.0"
+description = "MCP server for creating, reading, and manipulating Office documents (DOCX, XLSX, PPTX, PDF, Email)"
+readme = "Readme.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "ForLegalAI" },
+    { name = "filhocf", email = "filhocf@gmail.com" },
+]
+keywords = ["mcp", "office", "docx", "xlsx", "pptx", "pdf", "documents"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "python-pptx==1.0.2",
+    "python-docx==1.2.0",
+    "beautifulsoup4>=4.13.4",
+    "openpyxl>=3.1.2",
+    "fastmcp>=3.2.0",
+    "pydantic>=2.11.5",
+    "PyYAML",
+    "pystache>=0.6.5",
+    "requests>=2.31.0",
+    "defusedxml>=0.7.1",
+    "python-dotenv>=1.2.1",
+]
+
+[project.optional-dependencies]
+cloud = [
+    "boto3>=1.40.1",
+    "botocore>=1.40.1",
+    "google-cloud-storage>=2.18.2",
+    "azure-storage-blob>=12.23.1",
+]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=1.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.4.0",
+]
+
+[project.scripts]
+mcp-ms-office-documents = "mcp_office_documents.server:main"
+
+[project.urls]
+Homepage = "https://github.com/ForLegalAI/mcp-ms-office-documents"
+Repository = "https://github.com/filhocf/mcp-ms-office-documents"
+Issues = "https://github.com/filhocf/mcp-ms-office-documents/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["mcp_office_documents", "docx_tools", "xlsx_tools", "pptx_tools", "email_tools", "xml_tools", "upload_tools"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"main.py" = "main.py"
+"config.py" = "config.py"
+"template_utils.py" = "template_utils.py"
+"middleware.py" = "middleware.py"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
