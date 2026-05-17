@@ -386,6 +386,94 @@ async def tool_get_pptx_slides(
         raise ToolError(f"Error reading slides: {e}")
 
 
+# === Advanced DOCX Tools ===
+from docx_tools.advanced import (
+    add_image_to_docx, add_header_footer, set_page_margins,
+    add_bullet_list, add_numbered_list, merge_table_cells,
+)
+
+
+@mcp.tool(name="add_image_to_docx", description="Add an image to a DOCX file", tags=["edit", "docx", "advanced"])
+async def tool_add_image(
+    file_path: Annotated[str, Field(description="Absolute path to the .docx file")],
+    image_path: Annotated[str, Field(description="Absolute path to the image file")],
+    width_inches: Annotated[float, Field(description="Image width in inches", default=4.0)] = 4.0,
+    output_path: Annotated[Optional[str], Field(description="Save to different path", default=None)] = None,
+) -> str:
+    try:
+        return add_image_to_docx(file_path, image_path, width_inches, output_path=output_path)
+    except Exception as e:
+        raise ToolError(f"Error adding image: {e}")
+
+
+@mcp.tool(name="add_header_footer", description="Add header and/or footer to a DOCX file", tags=["edit", "docx", "advanced"])
+async def tool_add_header_footer(
+    file_path: Annotated[str, Field(description="Absolute path to the .docx file")],
+    header_text: Annotated[str, Field(description="Header text (empty to skip)", default="")] = "",
+    footer_text: Annotated[str, Field(description="Footer text (empty to skip)", default="")] = "",
+    output_path: Annotated[Optional[str], Field(description="Save to different path", default=None)] = None,
+) -> str:
+    try:
+        return add_header_footer(file_path, header_text, footer_text, output_path)
+    except Exception as e:
+        raise ToolError(f"Error adding header/footer: {e}")
+
+
+@mcp.tool(name="set_page_margins", description="Set page margins for a DOCX file (in cm)", tags=["edit", "docx", "advanced"])
+async def tool_set_page_margins(
+    file_path: Annotated[str, Field(description="Absolute path to the .docx file")],
+    top_cm: Annotated[float, Field(description="Top margin in cm", default=2.54)] = 2.54,
+    bottom_cm: Annotated[float, Field(description="Bottom margin in cm", default=2.54)] = 2.54,
+    left_cm: Annotated[float, Field(description="Left margin in cm", default=2.54)] = 2.54,
+    right_cm: Annotated[float, Field(description="Right margin in cm", default=2.54)] = 2.54,
+    output_path: Annotated[Optional[str], Field(description="Save to different path", default=None)] = None,
+) -> str:
+    try:
+        return set_page_margins(file_path, top_cm, bottom_cm, left_cm, right_cm, output_path)
+    except Exception as e:
+        raise ToolError(f"Error setting margins: {e}")
+
+
+@mcp.tool(name="add_bullet_list", description="Add a bullet list to a DOCX file", tags=["edit", "docx", "advanced"])
+async def tool_add_bullet_list(
+    file_path: Annotated[str, Field(description="Absolute path to the .docx file")],
+    items: Annotated[List[str], Field(description="List items")],
+    output_path: Annotated[Optional[str], Field(description="Save to different path", default=None)] = None,
+) -> str:
+    try:
+        return add_bullet_list(file_path, items, output_path)
+    except Exception as e:
+        raise ToolError(f"Error adding list: {e}")
+
+
+@mcp.tool(name="add_numbered_list", description="Add a numbered list to a DOCX file", tags=["edit", "docx", "advanced"])
+async def tool_add_numbered_list(
+    file_path: Annotated[str, Field(description="Absolute path to the .docx file")],
+    items: Annotated[List[str], Field(description="List items")],
+    output_path: Annotated[Optional[str], Field(description="Save to different path", default=None)] = None,
+) -> str:
+    try:
+        return add_numbered_list(file_path, items, output_path)
+    except Exception as e:
+        raise ToolError(f"Error adding list: {e}")
+
+
+@mcp.tool(name="merge_table_cells", description="Merge cells in a DOCX table", tags=["edit", "docx", "advanced"])
+async def tool_merge_table_cells(
+    file_path: Annotated[str, Field(description="Absolute path to the .docx file")],
+    table_index: Annotated[int, Field(description="Table index (0-based)")],
+    start_row: Annotated[int, Field(description="Start row (0-based)")],
+    start_col: Annotated[int, Field(description="Start column (0-based)")],
+    end_row: Annotated[int, Field(description="End row (0-based)")],
+    end_col: Annotated[int, Field(description="End column (0-based)")],
+    output_path: Annotated[Optional[str], Field(description="Save to different path", default=None)] = None,
+) -> str:
+    try:
+        return merge_table_cells(file_path, table_index, start_row, start_col, end_row, end_col, output_path)
+    except Exception as e:
+        raise ToolError(f"Error merging cells: {e}")
+
+
 # === PDF Tools ===
 from pdf_tools import markdown_to_pdf, docx_to_pdf
 
