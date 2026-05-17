@@ -36,6 +36,8 @@ dependencies = [
     "requests>=2.31.0",
     "defusedxml>=0.7.1",
     "python-dotenv>=1.2.1",
+    "fpdf2>=2.8.0",
+    "markdown>=3.5",
 ]
 
 [project.optional-dependencies]

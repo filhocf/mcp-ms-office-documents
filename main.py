@@ -386,6 +386,40 @@ async def tool_get_pptx_slides(
         raise ToolError(f"Error reading slides: {e}")
 
 
+# === PDF Tools ===
+from pdf_tools import markdown_to_pdf, docx_to_pdf
+
+
+@mcp.tool(name="create_pdf_from_markdown", description="Generate a PDF document from Markdown content", tags=["create", "pdf"])
+async def tool_create_pdf_from_markdown(
+    markdown_content: Annotated[str, Field(description="Markdown text to convert to PDF")],
+    file_name: Annotated[Optional[str], Field(description="Output file name (without extension)", default=None)] = None,
+) -> str:
+    """Create a PDF from Markdown with headings, lists, paragraphs."""
+    try:
+        result = markdown_to_pdf(markdown_content, file_name=file_name)
+        logger.info("PDF created from Markdown successfully.")
+        return result
+    except Exception as e:
+        logger.error(f"Error creating PDF: {e}", exc_info=True)
+        raise ToolError(f"Error creating PDF: {e}")
+
+
+@mcp.tool(name="convert_docx_to_pdf", description="Convert an existing DOCX file to PDF", tags=["convert", "pdf"])
+async def tool_convert_docx_to_pdf(
+    file_path: Annotated[str, Field(description="Absolute path to the .docx file to convert")],
+    file_name: Annotated[Optional[str], Field(description="Output file name (without extension)", default=None)] = None,
+) -> str:
+    """Convert a Word document to PDF preserving structure."""
+    try:
+        result = docx_to_pdf(file_path, file_name=file_name)
+        logger.info("DOCX converted to PDF successfully.")
+        return result
+    except Exception as e:
+        logger.error(f"Error converting to PDF: {e}", exc_info=True)
+        raise ToolError(f"Error converting to PDF: {e}")
+
+
 # === Edit Tools ===
 from edit_tools import (
     edit_docx_paragraph, delete_docx_paragraph, search_replace_docx, insert_docx_paragraph,
