@@ -1,20 +1,25 @@
 """Entry point for mcp-ms-office-documents CLI."""
 
+import os
 import sys
-from pathlib import Path
 
-# Add project root to path so existing modules (docx_tools, etc.) are importable
-_root = Path(__file__).resolve().parent.parent
-if str(_root) not in sys.path:
-    sys.path.insert(0, str(_root))
+# When installed as package, modules like docx_tools/ are in site-packages.
+# When running from repo, they're in the project root.
+# We need to ensure the project root is in path for both cases.
+_pkg_dir = os.path.dirname(os.path.abspath(__file__))
+_project_root = os.path.dirname(_pkg_dir)
+
+# Add project root for repo-local runs
+if os.path.exists(os.path.join(_project_root, "docx_tools")):
+    if _project_root not in sys.path:
+        sys.path.insert(0, _project_root)
 
 
 def main():
     """Start the MCP Office Documents server."""
-    from main import mcp  # noqa: E402
-    from config import get_config  # noqa: E402
+    # Import here to ensure path is set
+    from mcp_office_documents.app import mcp, config
 
-    config = get_config()
     mcp.run(
         transport="streamable-http",
         host="0.0.0.0",
