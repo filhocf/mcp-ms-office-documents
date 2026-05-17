@@ -386,6 +386,32 @@ async def tool_get_pptx_slides(
         raise ToolError(f"Error reading slides: {e}")
 
 
+# === Merge Tools ===
+from merge_tools import merge_docx, merge_pptx
+
+
+@mcp.tool(name="merge_docx_files", description="Merge multiple DOCX files into one document", tags=["merge", "docx"])
+async def tool_merge_docx(
+    file_paths: Annotated[List[str], Field(description="List of absolute paths to .docx files to merge")],
+    output_path: Annotated[str, Field(description="Output path for merged document")],
+) -> str:
+    try:
+        return merge_docx(file_paths, output_path)
+    except Exception as e:
+        raise ToolError(f"Error merging DOCX: {e}")
+
+
+@mcp.tool(name="merge_pptx_files", description="Merge multiple PPTX files into one presentation", tags=["merge", "pptx"])
+async def tool_merge_pptx(
+    file_paths: Annotated[List[str], Field(description="List of absolute paths to .pptx files to merge")],
+    output_path: Annotated[str, Field(description="Output path for merged presentation")],
+) -> str:
+    try:
+        return merge_pptx(file_paths, output_path)
+    except Exception as e:
+        raise ToolError(f"Error merging PPTX: {e}")
+
+
 # === Advanced PPTX Tools ===
 from pptx_tools.advanced import open_pptx_and_edit, add_shape_to_slide, duplicate_slide, apply_slide_template
 
